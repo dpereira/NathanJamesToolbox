@@ -5,16 +5,18 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='NathanJamesToolbox',
+    packages=setuptools.find_packages(),
     version='0.1',
+    description="Package for NJ scripts",
     scripts=['NathanJamesToolbox'],
     author="Paulo Fajardo",
     author_email="paulo.fajardo@nathanjames.com",
-    description="Package for NJ scripts",
+    download_url='https://github.com/pfajardo-nj/NathanJamesToolbox',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pfajardo-nj/NathanJamesToolbox",
-    packages=setuptools.find_packages(),
     classifiers=[
+        "Environment :: Console",
+        "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
