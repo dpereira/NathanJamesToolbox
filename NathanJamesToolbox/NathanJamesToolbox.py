@@ -305,3 +305,18 @@ class mySQLToolbox():
         db.close()
 
         return data
+
+    def runQuery(self, qry):
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password, db=self.db)
+        cursor = db.cursor()
+
+        try:
+            # Execute the SQL command
+            cursor.execute(qry)
+            db.commit()
+            return 'Passed'
+        except Exception as e:
+            db.rollback()
+            return 'Failed', e
+        finally:
+            db.close()
