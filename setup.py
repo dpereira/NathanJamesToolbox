@@ -5,20 +5,22 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='NathanJamesToolbox',
-    packages=setuptools.find_packages(),
-    version='0.1',
-    description="Package for NJ scripts",
-    scripts=['NathanJamesToolbox'],
-    author="Paulo Fajardo",
-    author_email="paulo.fajardo@nathanjames.com",
-    download_url='https://github.com/pfajardo-nj/NathanJamesToolbox',
+    version='1.0.7',
+    description='Collection of tools developed for NathanJames',
     long_description=long_description,
     long_description_content_type="text/markdown",
+    url='https://github.com/pfajardo-nj/NathanJamesToolbox',
+    license='MIT',
     classifiers=[
-        "Environment :: Console",
-        "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        'License :: OSI Approved :: MIT License',
     ],
+    packages=['NathanJamesToolbox'],
+    include_package_data=True,
+    install_requires=[
+        'requests',
+        'slacker',
+        'datetime',
+        'google.cloud',
+        'pymysql'
+    ]
 )
