@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='NathanJamesToolbox',
-    version='1.0.7',
+    version='1.2.2',
     description='Collection of tools developed for NathanJames',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -21,6 +21,7 @@ setuptools.setup(
         'slacker',
         'datetime',
         'google.cloud',
-        'pymysql'
+        'pymysql',
+        'selenium'
     ]
 )

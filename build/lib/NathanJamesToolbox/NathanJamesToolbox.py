@@ -3,6 +3,12 @@ from slacker import Slacker
 import datetime as dt
 from google.cloud import storage
 import pymysql
+from selenium.common.exceptions import NoSuchElementException
+import linecache
+import sys
+import inspect
+import pathlib
+import json
 
 
 class airtableToolbox:
@@ -25,15 +31,19 @@ class airtableToolbox:
                     try:
                         _items = []
                         _name = str(rec['fields'][baseName]).strip()
-                        _items.append(rec['id'])
                         for a in args:
                             try:
                                 _items.append(str(rec['fields'][a]).strip())
                             except:
                                 _items.append('N/A')
-                        _dict[_name] = _items
+
                         if reverse:
-                            _dict_reverse[rec['id']] = _name
+                            _items.insert(0, _name)
+                            _dict_reverse[rec['id']] = _items
+                        else:
+                            _items.insert(0, rec['id'])
+                            _dict[_name] = _items
+
                     except KeyError:
                         pass
 
@@ -53,7 +63,6 @@ class airtableToolbox:
                 else:
                     _dict = {}
                 break
-
         if reverse:
             return _dict_reverse
         else:
@@ -159,6 +168,51 @@ class airtableToolbox:
     def create_url(self, url_base):
         return '{}/{}'.format(self.airtableURL, url_base)
 
+    def get_ids(self, table, column_name):
+        url = "{base_url}/{table}?sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}".format(
+            base_url=self.airtableURL, table=table, column_name=column_name)
+        atURL = url
+        _dict = {}
+
+        while True:
+            print(atURL)
+            r = requests.get(atURL, headers=self.airtableHeaders).json()
+            for row in r['records']:
+                _id = row['id']
+                poName = row['fields']['PO Name']
+                _dict[_id] = poName
+
+            try:
+                offset = r['offset']
+                if '?' in url:
+                    atURL = '{}&offset={}'.format(url, offset)
+                else:
+                    atURL = '{}?offset={}'.format(url, offset)
+            except KeyError:
+                break
+            except Exception:
+                break
+
+        _list_po = _dict
+        _dict = {}
+        for po in _list_po:
+            _list = []
+            key = _list_po.get(po)
+            value = po
+            if key in _dict:
+                # get _dict _list, append value to _list
+                _list_new = _dict.get(key)
+                _list_new.append(value)
+                _dict[key] = _list_new
+                _list_new = []
+            else:
+                # add key to _dict and create new list
+                _list_new = []
+                _list_new.append(value)
+                _dict[key] = _list_new
+                _list_new = []
+        return _dict
+
 
 class slackToolbox:
     def __init__(self, _key, _channel):
@@ -166,9 +220,24 @@ class slackToolbox:
         self._channel = _channel
 
     def send_message(self, funcName, errorDesc):
+        module = inspect.getmodule(inspect.stack()[1][0])
+        caller = str(module)[str(module).find('from ') + 6: -2]
+        if caller.rfind('/', 0, caller.rfind('/')) <= 0:
+            pass
+        else:
+            index_ = caller.rfind('/', 0, caller.rfind('/'))
+            caller = caller[index_:]
+
         _message = 'Python File: {}\n' \
                    'Function Name: {}\n' \
-                   'Error Description: {}'.format(__file__, funcName, errorDesc)
+                   'Error Description: {}'.format(caller, funcName, errorDesc)
+        slack = Slacker(self._key)
+        slack.chat.post_message(self._channel, _message)
+
+    def send_booking_confirmation(self, funcName, description):
+        _message = 'Python File: {}\n' \
+                   'Function Name: {}\n' \
+                   'Description: {}'.format(__file__, funcName, description)
         slack = Slacker(self._key)
         slack.chat.post_message(self._channel, _message)
 
@@ -324,19 +393,63 @@ class mySQLToolbox:
         finally:
             db.close()
 
+    def create_log(self, logType='log', log_=None, logMode='Testing', sessionID=None):
+        if log_ is None or logMode == 'Testing' or sessionID is None:
+            # Invalid log
+            return
+
+        type_ = {
+            'e': 'Error',
+            'err': 'Error',
+            'error': 'Error',
+        }
+
+        logType = type_.get(logType.lower())
+        if logType is None:
+            logType = 'Log'
+
+        module = inspect.getmodule(inspect.stack()[1][0])
+        module_ = str(module)[str(module).find("'") + 1:]
+        module_ = module_[:module_.find("'")]
+        filename = str(module.__file__)
+        filename = filename[filename.rfind('/') + 1:].replace('.py', '')
+        sessionID = '{}{}'.format(filename.lower(), sessionID)
+
+        log_ = '("{}", "{}", "{}", "{}", "{}", "{}")'.format(sessionID, dt.datetime.utcnow(), filename, module_,
+                                                             logType, log_)
+        log_ = 'INSERT INTO NathanJames_Monitoring.logs ' \
+               '(session_id, datetime, scriptName, function, type, description) VALUES {}'.format(log_)
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password, db=self.db)
+        cursor = db.cursor()
+
+        try:
+            # Execute the SQL command
+            cursor.execute(log_)
+            db.commit()
+            return 1
+        except Exception as e:
+            db.rollback()
+            return 0, e
+        finally:
+            db.close()
+
 
 class FlexportToolbox:
-    def __init__(self, token):
+    def __init__(self, token, version=2):
         self.base_url = 'https://api.flexport.com/'
         self.token = token
         self.headers = {
                         'Authorization': 'Token token="%s"' % self.token,
                         'Content-Type': 'application/json; charset=utf-8',
-                        'Flexport-Version': '2'
+                        'Flexport-Version': '{}'.format(version)
                         }
 
     def get_json(self, endpoint, *args):
-        url = '{}{}'.format(self.base_url, endpoint)
+        if 'api.flexport.com' not in endpoint:
+            url = '{}{}'.format(self.base_url, endpoint)
+        else:
+            url = endpoint
+        print(url)
         if len(args) != 0:
             url += '?'
             for arg in args:
@@ -351,8 +464,7 @@ class FlexportToolbox:
             for arg in args:
                 url += arg + '&'
             url = url[:-1]
-        # return requests.post(url, data=payload, headers=self.headers)
-        return 200
+        return requests.post(url, data=payload, headers=self.headers)
 
     def check_version(self, url):
         r = requests.get(url, headers=self.headers).json()
@@ -448,3 +560,45 @@ class FreshdeskToolbox:
     def get_json(self, endpoint):
         url = '{}{}'.format(self.base_url, endpoint)
         return requests.get(url, auth=self.auth_).json()
+
+
+class MiscToolbox:
+    def getWeek(self):
+        return abs(int((dt.datetime.utcnow() - dt.datetime(2017, 9, 3)).days / 7)) - 1
+
+    def check_exists_by_xpath(self, driver, xpath):
+        try:
+            driver.find_element_by_xpath(xpath)
+        except NoSuchElementException:
+            return False
+        return True
+
+    def PrintException(self):
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        return 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+
+    def get_key(self):
+        module = inspect.getmodule(inspect.stack()[1][0])
+        # path_ = str(module)[str(module).find("from '") + 6:-2]
+        path_ = pathlib.Path(module.__file__).parent.absolute()
+        path_ = str(path_).replace('\\', '/')
+        print(path_)
+        while True:
+            index_ = path_.rfind('/')
+            if index_ >= 0:
+                path_ = path_[:index_]
+                filename = path_ + '/key/key.json'
+                if pathlib.Path(filename).is_file():
+                    break
+            else:
+                print('!!! Key file missing !!!')
+                raise Exception('!!!CRITICAL!!! Key file is missing')
+        with open(filename, 'r') as f:
+            key = f.read()
+            key = json.loads(key)
+        return key
