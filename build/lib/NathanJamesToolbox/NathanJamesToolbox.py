@@ -219,18 +219,40 @@ class slackToolbox:
         self._key = _key
         self._channel = _channel
 
-    def send_message(self, funcName, errorDesc):
-        module = inspect.getmodule(inspect.stack()[1][0])
-        caller = str(module)[str(module).find('from ') + 6: -2]
-        if caller.rfind('/', 0, caller.rfind('/')) <= 0:
-            pass
-        else:
-            index_ = caller.rfind('/', 0, caller.rfind('/'))
-            caller = caller[index_:]
+    def send_message(self, funcName=None, errorDesc=None):
+        try:
+            _inspect = inspect.stack()[1][0]
+            elems = str(_inspect).split(',')
+            print(elems)
+
+            caller = elems[1]
+            caller = str(caller[6:-1]).strip()
+
+            _line = str(elems[2]).strip()
+
+            if funcName is None:
+                caller_func = str(elems[3])
+                caller_func = caller_func.replace('code', '').strip()
+                caller_func = caller_func[:-1]
+            else:
+                caller_func = funcName
+
+            if caller.rfind('/', 0, caller.rfind('/')) <= 0:
+                pass
+            else:
+                index_ = caller.rfind('/', 0, caller.rfind('/'))
+                caller = caller[index_:]
+        except Exception:
+            caller = '__process__'
+            _line = '__line__'
+            caller_func = 'n/a'
 
         _message = 'Python File: {}\n' \
                    'Function Name: {}\n' \
-                   'Error Description: {}'.format(caller, funcName, errorDesc)
+                   'Error Description: \n' \
+                   '-- Error on {}\n-- {}\n{}'.format(caller, caller_func, _line, errorDesc, '=' * 100)
+
+        # print(_message)
         slack = Slacker(self._key)
         slack.chat.post_message(self._channel, _message)
 
@@ -238,6 +260,13 @@ class slackToolbox:
         _message = 'Python File: {}\n' \
                    'Function Name: {}\n' \
                    'Description: {}'.format(__file__, funcName, description)
+        slack = Slacker(self._key)
+        slack.chat.post_message(self._channel, _message)
+
+    def send_warning(self, pyfile=__file__, funcName=None, description=None):
+        _message = 'Python File: {}\n' \
+                   'Function Name: {}\n' \
+                   'Description: {}'.format(pyfile, funcName, description)
         slack = Slacker(self._key)
         slack.chat.post_message(self._channel, _message)
 
@@ -433,28 +462,41 @@ class mySQLToolbox:
         finally:
             db.close()
 
+    def stringfy(self, _string):
+        if _string is None:
+            return 'NULL'
+        else:
+            return '"{}"'.format(str(_string))
+
+    def convert_date(self, dateString, fromFormat, toFormat):
+        if dateString is None:
+            return 'NULL'
+        else:
+            dateString = dt.datetime.strptime(dateString, fromFormat)
+            return self.stringfy(dt.datetime.strftime(dateString, toFormat))
+
 
 class FlexportToolbox:
     def __init__(self, token, version=2):
         self.base_url = 'https://api.flexport.com/'
         self.token = token
         self.headers = {
-                        'Authorization': 'Token token="%s"' % self.token,
-                        'Content-Type': 'application/json; charset=utf-8',
-                        'Flexport-Version': '{}'.format(version)
-                        }
+            'Authorization': 'Token token="%s"' % self.token,
+            'Content-Type': 'application/json; charset=utf-8',
+            'Flexport-Version': '{}'.format(version)
+        }
 
     def get_json(self, endpoint, *args):
         if 'api.flexport.com' not in endpoint:
             url = '{}{}'.format(self.base_url, endpoint)
         else:
             url = endpoint
-        print(url)
         if len(args) != 0:
             url += '?'
             for arg in args:
                 url += arg + '&'
             url = url[:-1]
+        print(url)
         return requests.get(url, headers=self.headers).json()
 
     def post_payload(self, endpoint, payload, *args):
@@ -560,6 +602,53 @@ class FreshdeskToolbox:
     def get_json(self, endpoint):
         url = '{}{}'.format(self.base_url, endpoint)
         return requests.get(url, auth=self.auth_).json()
+
+
+class Price2SpyToolbox:
+    def __init__(self, key):
+        self.key = key
+        self.base_url = 'https://api.price2spy.com/rest/v1/'
+        self.headers = {'content-type': 'application/json', 'Authorization': self.key}
+
+    def getCurrentPricing(self, **kwargs):
+        url = '{}get-current-pricing-data'.format(self.base_url)
+        numType = ['active', 'brandId', 'categoryId', 'productId', 'supplierId']
+        payload = ''
+
+        for k in kwargs:
+            if k in numType:
+                payload += '"{}": {},'.format(k, kwargs.get(k))
+            else:
+                payload += '"{}": "{}",'.format(k, kwargs.get(k))
+
+        payload = '{%s}' % payload[:-1]
+
+        r = requests.post(url, headers=self.headers, data=payload)
+        return r.json()
+
+
+class SaddleCreekToolbox:
+
+    class SaddleCreekSFTP:
+        def __init__(self, _hostname, _username, _password):
+            self._hostname = _hostname
+            self._username = _username
+            self._password = _password
+
+        def get_sftp_data(self, source_path, source_filename, dest_filename_path):
+            import pysftp
+
+            myHostname = self._hostname
+            myUsername = self._username
+            myPassword = self._password
+
+            cnopts = pysftp.CnOpts()
+            cnopts.hostkeys = None
+
+            with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword, cnopts=cnopts) as sftp:
+                print("Connection succesfully stablished ... ")
+                sftp.cwd(source_path)
+                sftp.get(source_filename, dest_filename_path)
 
 
 class MiscToolbox:
