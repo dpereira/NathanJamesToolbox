@@ -213,6 +213,18 @@ class airtableToolbox:
                 _list_new = []
         return _dict
 
+    def delete_ids(self, _table, _list_id):
+        """
+        Please note that the script can only handle a max of 10 IDs
+        """
+        _list_id = ['records[]={}'.format(_id) for _id in _list_id]
+        if len (_list_id) > 10:
+            raise Exception('Function NathanJamesToolbox.airtableToolbox.delete_ids can only handle a max of 10 IDs.')
+
+        url = '{}/{}?{}'.format(self.airtableURL, _table, '&'.join(_list_id))
+        r = requests.request('DELETE', url, headers=self.airtableHeaders)
+        return r
+
 
 class slackToolbox:
     def __init__(self, _key, _channel):
@@ -264,9 +276,9 @@ class slackToolbox:
         slack.chat.post_message(self._channel, _message)
 
     def send_warning(self, pyfile=__file__, funcName=None, description=None):
-        _message = 'Python File: {}\n' \
-                   'Function Name: {}\n' \
-                   'Description: {}'.format(pyfile, funcName, description)
+        _message = 'Python File:\n\t\t{}\n' \
+                   'Function Name:\n\t\t{}\n' \
+                   'Description:\n\t\t{}\n{}'.format(pyfile, funcName, description, '=' * 100)
         slack = Slacker(self._key)
         slack.chat.post_message(self._channel, _message)
 
@@ -691,3 +703,14 @@ class MiscToolbox:
             key = f.read()
             key = json.loads(key)
         return key
+
+    def divide_list(self, _list, n):
+        for i in range(0, len(_list), n):
+            yield _list[i:i + n]
+
+    def convert_to_json(self, str):
+        str = str.strip(',')
+        str = eval(str)
+        return json.dumps(str)
+
+
