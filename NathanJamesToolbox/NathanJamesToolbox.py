@@ -708,9 +708,9 @@ class MiscToolbox:
         for i in range(0, len(_list), n):
             yield _list[i:i + n]
 
-    def convert_to_json(self, str):
-        str = str.strip(',')
-        str = eval(str)
-        return json.dumps(str)
+    def convert_to_json(self, value):
+        value = str.strip(',')
+        value = eval(value)
+        return json.dumps(value)
 
 
