@@ -1,3 +1,4 @@
+
 # NathanJames Toolbox
 
 Collection of tools used by NathanJames
@@ -16,38 +17,61 @@ pip install NathanJamesToolbox
 
 ## Usage
 
-importing the module
+### AirtableToolbox Class
+#### Overview
+The class contains functions that help integrating with Airtable easier.
 
-```
-from NathanJamesToolbox import NathanJamesToolbox as nj
-```
+---
 
-### airtableToolbox
+**Importing the module**
 
-```
-myAirtable = nj.airtableToolbox(<airtable base>, <airtable API Key>)
-```
+	>>> from NathanJamesToolbox import NathanJamesToolbox as nj
 
-Create a dictionary from airtable columns
-reverse=False will use airtable base column name as the key and add row ID into the value list
-reverse=True will use airtable row ID as the key and add base column name into the value list
-*args are additional column you want to add into the value list
-```
-myAirtable.create_dictionary(url, baseColumnName, reverse=False, *args)
-```
+**AirtableToolbox Class Instance**
 
-Cleans up the string by removing the following charcater in a string ([, ', ])
-```
-myAirtable.create_dictionary.clean_list_string("['TEST']")
->>> TEST
-```
+	_airtable = nj.airtableToolbox(<airtable base>, <airtable API Key>)
+---
+**Create a URL using the table name**
+Create a formatted URL by supplying the table name
 
-Push a payload into airtable
-patch=True sends a patch request
-patch=False sens a post request
-```
-push_data(url, payload, patch=True)
-```
+	>>> # _airtable.create_url(<Table Name>)
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> url = _airtable.create_url('Master')
+	>>> url
+	'https://api.airtable.com/v0/Master'
+
+**Create a dictionary of columns**
+Loop through all the pages and create a dictionary based on the table columns.
+
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> url = _airtable.create_url('Master?filterbyformula={SKU}=12345')
+	
+	>>> _dict_master = _airtable.create_dictionary(url, 'SKU', reverse=False)
+	>>> _dict_master
+	{'12345': ['recxyzId']}
+	
+	>>> _dict_master = _airtable.create_dictionary(url, 'SKU', reverse=False, 'Product Class', 'Item Status')
+	>>> _dict_master
+	{'12345': ['recxyzId', 'Regular', 'Live']}
+**Create a list of JSON containing all data**
+Loop through all the pages and create a list containing all data on all columns.
+
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> url = _airtable.create_url('Master?filterbyformula={SKU}=12345')
+
+	>>> _json_master = _airtable.get_json(url)
+	>>> _json_master
+	[{"id": "recxyzId","fields": {"SKU": "12345","Product Title": "Sample Title","PDS": ["recapABC"],"Product Class": "New","UPC": ["recABC"]}]
+**Create a list of Airtable record IDs**
+Loop through all the pages and create a dictionary containing the {record ID: column data}.
+This is similar to create_dictionary but this limits the output to just 1 data point with the key being the record ID.
+The function also does not allow you to pass in query parameters.
+
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> _json_master = _airtable.get_ids('Master', 'SKU')
+	{'recxyzId': '12345', 'recabcId': '54321', 'recasdId': '74125'}
+
+
 
 ## Authors
 

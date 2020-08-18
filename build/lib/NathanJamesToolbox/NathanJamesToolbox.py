@@ -218,7 +218,7 @@ class airtableToolbox:
         Please note that the script can only handle a max of 10 IDs
         """
         _list_id = ['records[]={}'.format(_id) for _id in _list_id]
-        if len (_list_id) > 10:
+        if len(_list_id) > 10:
             raise Exception('Function NathanJamesToolbox.airtableToolbox.delete_ids can only handle a max of 10 IDs.')
 
         url = '{}/{}?{}'.format(self.airtableURL, _table, '&'.join(_list_id))
@@ -475,7 +475,7 @@ class mySQLToolbox:
             db.close()
 
     def stringfy(self, _string):
-        if _string is None:
+        if _string is None or _string == '' or _string == 'None':
             return 'NULL'
         else:
             return '"{}"'.format(str(_string))
@@ -708,9 +708,9 @@ class MiscToolbox:
         for i in range(0, len(_list), n):
             yield _list[i:i + n]
 
-    def convert_to_json(self, str):
-        str = str.strip(',')
-        str = eval(str)
-        return json.dumps(str)
+    def convert_to_json(self, value):
+        value = value.strip(',')
+        value = eval(value)
+        return json.dumps(value)
 
 
