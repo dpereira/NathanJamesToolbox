@@ -32,6 +32,7 @@ The class contains functions that help integrating with Airtable easier.
 	_airtable = nj.airtableToolbox(<airtable base>, <airtable API Key>)
 ---
 **Create a URL using the table name**
+
 Create a formatted URL by supplying the table name
 
 	>>> # _airtable.create_url(<Table Name>)
