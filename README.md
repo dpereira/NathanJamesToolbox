@@ -184,11 +184,7 @@ The class contains functions that help integrating with Slack easier.
 
 ---
 
-**Importing the module**
-
-	>>> from NathanJamesToolbox import NathanJamesToolbox as nj
-
-**SlackToolboxClass Instance**
+**SlackToolbox Class Instance**
 
 	_slack = nj.SlackToolbox(<api_key>, <channel_name>)
 ---
@@ -205,7 +201,109 @@ Example:
 
 ![Sample message](https://github.com/pfajardo-nj/NathanJamesToolbox/blob/master/assets/slack_error_sample.JPG)
 	
+**Send a booking confirmation message in a slack channel**
+- The function sends a booking confirmation message to a specific channel
 
+Example:
+
+	>>> # send_booking_confirmation(funcName, description)
+
+	>>> _slack = nj.SlackToolbox('xyzAPIkey', 'operations')
+	>>> _slack.send_warning(__file__, 'create_shipment', 'Flexport booking created for PO-00xxx (#Containers: 4) | Cargo Ready Date: 2020-08-31) | Delivery Date: 2020-09-30)')
+
+
+---
+### MySQLToolbox Class
+#### Overview
+The class contains functions that help integrating with mySQL easier.
+
+---
+**MySQLToolbox Class Instance**
+
+	>>> # _mySQL= nj.mySQLToolbox(default_file_path, host, user, password, database_name)
+	>>> _mySQL= nj.mySQLToolbox('c:\\', '123.456.7.8', 'root', 'Pass8426Word', 'NathanJames')
+---
+**Read a query**
+- Run a query and return the result
+- Accepts both file 'f' or a query string 'q'
+
+Example:
+
+	>>> # readQuery(qry, type)
+	>>> _mySQL= nj.mySQLToolbox('c:\\', '123.456.7.8', 'root', 'Pass8426Word', 'NathanJames')
+	>>> qry = 'SELECT sku, product_class FROM NathanJames.Master'
+	>>> req = _mySQL.read_query(qry, 'q')
+	>>> req
+	((12345, Regular), (54321, Regular), (74125, Regular))
+	
+	>>> with open('c:\\test.sql', 'w') as f:
+	>>>		f.write('SELECT sku, product_class FROM NathanJames.Master')
+	>>> qry = 'c:\\test.sql'
+	>>> req = _mySQL.read_query(qry, 'f')
+	>>> req
+	((12345, Regular), (54321, Regular), (74125, Regular))
+
+**Run a query**
+- Run a query and return if it passed or failed
+
+Example:
+
+	>>> # runQuery(qry)
+	>>> qry = 'CREATE TABLE NathanJames.Test (SKU VARCHAR(10))'
+	>>> req = _mySQL.runWuery(qry)
+	>>> req
+	Passed
+
+	>>> qry = 'CREATE TABLE NathanJames.Test'
+	>>> req = _mySQL.runQuery(qry)
+	>>> req
+	Failed
+
+
+---
+### Cin7Toolbox Class
+#### Overview
+The class contains functions that help integrating with Cin7.
+
+---
+**Cin7Toolbox Class Instance**
+
+	>>> # _cin7= nj.Cin7Toolbox(username, password)
+	>>> _cin7= nj.Cin7Toolbox('test_user', 'Pass8426Word')
+---
+**get_json**
+- Return a list containing the json response from the end-point
+
+Example:
+
+	>>> # get_json(self, endpoint)
+	>>> _cin7= nj.Cin7Toolbox('test_user', 'Pass8426Word')
+	>>> url = 'https://api.cin7.com/api/v1/SalesOrders?where=id=1234'
+	>>> req = _cin7.get_json(url)
+	>>> req
+	[{"id": 1234,"createdDate": "2018-07-18T06:00:00Z","modifiedDate": "2018-08-09T19:01:12Z","createdBy": 30437,"processedBy": 0,"isApproved": true,"reference": "CS122213218","memberId": 17,"firstName": "","lastName": "","company": "Wayfair","email": "","phone": "88888888888","mobile": ""}]
+	
+---
+### MiscToolbox Class
+#### Overview
+The class contains functions that help integrating with Cin7.
+
+---
+**MiscToolbox Class Instance**
+
+	>>> _misc= nj._misc()
+---
+**getWeek**
+- Return the current day's NathanJames week number
+
+Example:
+
+	>>> # get_week()
+	>>> _misc= nj._misc()
+	>>> # Suppose today is August 18, 2020
+	>>> _week = get_week()
+	>>> _week
+	154
 
 ## Authors
 
