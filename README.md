@@ -42,6 +42,7 @@ Create a formatted URL by supplying the table name
 	'https://api.airtable.com/v0/Master'
 
 **Create a dictionary of columns**
+
 Loop through all the pages and create a dictionary based on the table columns.
 
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
@@ -54,7 +55,9 @@ Loop through all the pages and create a dictionary based on the table columns.
 	>>> _dict_master = _airtable.create_dictionary(url, 'SKU', reverse=False, 'Product Class', 'Item Status')
 	>>> _dict_master
 	{'12345': ['recxyzId', 'Regular', 'Live']}
+	
 **Create a list of JSON containing all data**
+
 Loop through all the pages and create a list containing all data on all columns.
 
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
@@ -63,7 +66,9 @@ Loop through all the pages and create a list containing all data on all columns.
 	>>> _json_master = _airtable.get_json(url)
 	>>> _json_master
 	[{"id": "recxyzId","fields": {"SKU": "12345","Product Title": "Sample Title","PDS": ["recapABC"],"Product Class": "New","UPC": ["recABC"]}]
+	
 **Create a list of Airtable record IDs**
+
 Loop through all the pages and create a dictionary containing the {record ID: column data}.
 This is similar to create_dictionary but this limits the output to just 1 data point with the key being the record ID.
 The function also does not allow you to pass in query parameters.
@@ -73,6 +78,7 @@ The function also does not allow you to pass in query parameters.
 	{'recxyzId': '12345', 'recabcId': '54321', 'recasdId': '74125'}
 
 **Delete a list of Airtable record IDs**
+
 Delete records in Airtable based on record IDs. Please note that the function can only accept a maximum of 10 record IDs per request. This is an inherit limitation from Airtable.
 
 	>>> # delete_ids(<table name>, <list_id>)
@@ -80,6 +86,7 @@ Delete records in Airtable based on record IDs. Please note that the function ca
 	>>> _airtable.delete_ids('Master', ['recxyzId', 'recabcId', 'recasdId'])
 
 **Push data to Airtable (Patch / Post)**
+
 Sends either a patch or post request to the Airtable API.
 |Status|Code|Reason|Description
 |--|--|--|--|
@@ -104,7 +111,9 @@ Sends either a patch or post request to the Airtable API.
 	>>> req = _airtable.push_data(url, payload, patch=True)
 	>>> req
 	200
+
 **Create a list of data in an Airtable column**
+
 Returns a list of row data based on the Airtable column.
 
 	>>># create_list(url, column)
@@ -115,6 +124,7 @@ Returns a list of row data based on the Airtable column.
 	['12345', '54321', '74125']
 
 **Check Airtable table for duplicates based on column data**
+
 Returns a list of duplicate row data based on the Airtable column.
 
 	>>># table_duplicate_check(url, baseName)
@@ -126,7 +136,9 @@ Returns a list of duplicate row data based on the Airtable column.
 	----table: Master
 	----Data: ['74125']
 	>>> # This means that the Master table contains 2 records with SKU 74125
+
 **Cleans up a string that is formatted as a list**
+
 Returns a string that contains the following characters: ["'", "[", "]"]
 
 	>>># clean_list_string(str)
