@@ -60,6 +60,7 @@ pip install NathanJamesToolbox
 ### AirtableToolbox Class
 #### Overview
 The class contains functions that help integrating with Airtable easier.
+
 [back](#table-of-contents)
 
 ---
