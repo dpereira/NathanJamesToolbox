@@ -1,9 +1,9 @@
 # Table of contents
-- [NathanJames Toolbox](#heading)
-	* [Getting Started](#sub-heading)
-		+ [Installing](#sub-sub-heading)
-	* [Airtable Class](#sub-heading)
-		+ [Overview](#sub-sub-heading)
+- [NathanJames Toolbox](#nathanjames-toolbox)
+	* [Getting Started](#getting-started)
+		+ [Installing](#installing)
+	* [Airtable Class](#airtabletoolbox-class)
+		+ [Overview](#overview)
 		+ [Importing the module](#sub-sub-heading)
 		+ [Create a URL using the table name](#sub-sub-heading)
 		+ [Create a dictionary of columns](#sub-sub-heading)
@@ -14,8 +14,8 @@
 		+ [Create a list of data in an Airtable column](#sub-sub-heading)
 		+ [Check Airtable table for duplicates based on column data](#sub-sub-heading)
 		+ [Cleans up a string that is formatted as a list](#sub-sub-heading)
-	* [Author](#sub-heading)
-	* [License](#sub-heading)
+	* [Author](#authors)
+	* [License](#license)
 
 <!-- toc -->
 
@@ -41,15 +41,15 @@ The class contains functions that help integrating with Airtable easier.
 
 ---
 
-**Importing the module**
+#### Importing the module
 
 	>>> from NathanJamesToolbox import NathanJamesToolbox as nj
 
-**AirtableToolbox Class Instance**
+#### AirtableToolbox Class Instance
 
 	_airtable = nj.airtableToolbox(<airtable base>, <airtable API Key>)
 ---
-**Create a URL using the table name**
+#### Create a URL using the table name
  - Create a formatted URL by supplying the table name
 
 Example:
@@ -60,7 +60,7 @@ Example:
 	>>> url
 	'https://api.airtable.com/v0/Master'
 
-**Create a dictionary of columns**
+#### Create a dictionary of columns
 - Loop through all the pages and create a dictionary based on the table columns.
 
 Example:
@@ -76,7 +76,7 @@ Example:
 	>>> _dict_master
 	{'12345': ['recxyzId', 'Regular', 'Live']}
 	
-**Create a list of JSON containing all data**
+#### Create a list of JSON containing all data
 - Loop through all the pages and create a list containing all data on all columns.
 
 Example:
@@ -88,7 +88,7 @@ Example:
 	>>> _json_master
 	[{"id": "recxyzId","fields": {"SKU": "12345","Product Title": "Sample Title","PDS": ["recapABC"],"Product Class": "New","UPC": ["recABC"]}]
 	
-**Create a list of Airtable record IDs**
+#### Create a list of Airtable record IDs
 - Loop through all the pages and create a dictionary containing the {record ID: column data}.
 - This is similar to create_dictionary but this limits the output to just 1 data point with the key being the record ID.
 - The function also does not allow you to pass in query parameters.
@@ -99,7 +99,7 @@ Example:
 	>>> _json_master = _airtable.get_ids('Master', 'SKU')
 	{'recxyzId': '12345', 'recabcId': '54321', 'recasdId': '74125'}
 
-**Delete a list of Airtable record IDs**
+#### Delete a list of Airtable record IDs
 - Delete records in Airtable based on record IDs.
 - Please note that the function can only accept a maximum of 10 record IDs per request. This is an inherit limitation from Airtable.
 
@@ -109,7 +109,7 @@ Example:
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
 	>>> _airtable.delete_ids('Master', ['recxyzId', 'recabcId', 'recasdId'])
 
-**Push data to Airtable (Patch / Post)**
+#### Push data to Airtable (Patch / Post)
 - Sends either a patch or post request to the Airtable API.
 
 |Status|Code|Reason|Description
@@ -138,7 +138,7 @@ Example:
 	>>> req
 	200
 
-**Create a list of data in an Airtable column**
+#### Create a list of data in an Airtable column
 - Returns a list of row data based on the Airtable column.
 
 Example:
@@ -150,7 +150,7 @@ Example:
 	>>> _list
 	['12345', '54321', '74125']
 
-**Check Airtable table for duplicates based on column data**
+#### Check Airtable table for duplicates based on column data
 - Returns a list of duplicate row data based on the Airtable column.
 
 Example:
@@ -165,7 +165,7 @@ Example:
 	----Data: ['74125']
 	>>> # This means that the Master table contains 2 records with SKU 74125
 
-**Cleans up a string that is formatted as a list**
+#### Cleans up a string that is formatted as a list
 - Returns a string that contains the following characters: ["'", "[", "]"]
 
 Example:
@@ -184,11 +184,11 @@ The class contains functions that help integrating with Slack easier.
 
 ---
 
-**SlackToolbox Class Instance**
+#### SlackToolbox Class Instance
 
 	_slack = nj.SlackToolbox(<api_key>, <channel_name>)
 ---
-**Send a warning message in a slack channel**
+#### Send a warning message in a slack channel
 - The function sends a message to a specific channel
 
 Example:
@@ -201,7 +201,7 @@ Example:
 
 ![Sample message](https://github.com/pfajardo-nj/NathanJamesToolbox/blob/master/assets/slack_error_sample.JPG)
 	
-**Send a booking confirmation message in a slack channel**
+#### Send a booking confirmation message in a slack channel
 - The function sends a booking confirmation message to a specific channel
 
 Example:
@@ -218,12 +218,12 @@ Example:
 The class contains functions that help integrating with mySQL easier.
 
 ---
-**MySQLToolbox Class Instance**
+#### MySQLToolbox Class Instance
 
 	>>> # _mySQL= nj.mySQLToolbox(default_file_path, host, user, password, database_name)
 	>>> _mySQL= nj.mySQLToolbox('c:\\', '123.456.7.8', 'root', 'Pass8426Word', 'NathanJames')
 ---
-**Read a query**
+#### Read a query
 - Run a query and return the result
 - Accepts both file 'f' or a query string 'q'
 
@@ -243,7 +243,7 @@ Example:
 	>>> req
 	((12345, Regular), (54321, Regular), (74125, Regular))
 
-**Run a query**
+#### Run a query
 - Run a query and return if it passed or failed
 
 Example:
@@ -266,12 +266,12 @@ Example:
 The class contains functions that help integrating with Cin7.
 
 ---
-**Cin7Toolbox Class Instance**
+#### Cin7Toolbox Class Instance
 
 	>>> # _cin7= nj.Cin7Toolbox(username, password)
 	>>> _cin7= nj.Cin7Toolbox('test_user', 'Pass8426Word')
 ---
-**get_json**
+#### get_json
 - Return a list containing the json response from the end-point
 
 Example:
@@ -289,11 +289,11 @@ Example:
 The class contains functions that help integrating with Cin7.
 
 ---
-**MiscToolbox Class Instance**
+#### MiscToolbox Class Instance
 
 	>>> _misc= nj._misc()
 ---
-**getWeek**
+#### getWeek
 - Return the current day's NathanJames week number
 
 Example:
