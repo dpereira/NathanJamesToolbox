@@ -19,13 +19,15 @@
 
 <!-- toc -->
 
-# NathanJames Toolbox
+# NathanJames Toolbox 
 
 Collection of tools used by NathanJames
+[back](#table-of-contents)
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+[back](#table-of-contents)
 
 ### Installing
 
@@ -34,20 +36,25 @@ You can use pip to install the package.
 ```
 pip install NathanJamesToolbox
 ```
+[back](#table-of-contents)
 
 ### AirtableToolbox Class
 #### Overview
 The class contains functions that help integrating with Airtable easier.
+[back](#table-of-contents)
 
 ---
 
 #### Importing the module
 
 	>>> from NathanJamesToolbox import NathanJamesToolbox as nj
+[back](#table-of-contents)
 
 #### AirtableToolbox Class Instance
 
 	_airtable = nj.airtableToolbox(<airtable base>, <airtable API Key>)
+[back](#table-of-contents)
+
 ---
 #### Create a URL using the table name
  - Create a formatted URL by supplying the table name
@@ -59,6 +66,7 @@ Example:
 	>>> url = _airtable.create_url('Master')
 	>>> url
 	'https://api.airtable.com/v0/Master'
+[back](#table-of-contents)
 
 #### Create a dictionary of columns
 - Loop through all the pages and create a dictionary based on the table columns.
@@ -75,6 +83,7 @@ Example:
 	>>> _dict_master = _airtable.create_dictionary(url, 'SKU', reverse=False, 'Product Class', 'Item Status')
 	>>> _dict_master
 	{'12345': ['recxyzId', 'Regular', 'Live']}
+[back](#table-of-contents)
 	
 #### Create a list of JSON containing all data
 - Loop through all the pages and create a list containing all data on all columns.
@@ -87,6 +96,7 @@ Example:
 	>>> _json_master = _airtable.get_json(url)
 	>>> _json_master
 	[{"id": "recxyzId","fields": {"SKU": "12345","Product Title": "Sample Title","PDS": ["recapABC"],"Product Class": "New","UPC": ["recABC"]}]
+[back](#table-of-contents)
 	
 #### Create a list of Airtable record IDs
 - Loop through all the pages and create a dictionary containing the {record ID: column data}.
@@ -98,6 +108,7 @@ Example:
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
 	>>> _json_master = _airtable.get_ids('Master', 'SKU')
 	{'recxyzId': '12345', 'recabcId': '54321', 'recasdId': '74125'}
+[back](#table-of-contents)
 
 #### Delete a list of Airtable record IDs
 - Delete records in Airtable based on record IDs.
@@ -108,6 +119,7 @@ Example:
 	>>> # delete_ids(<table name>, <list_id>)
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
 	>>> _airtable.delete_ids('Master', ['recxyzId', 'recabcId', 'recasdId'])
+[back](#table-of-contents)
 
 #### Push data to Airtable (Patch / Post)
 - Sends either a patch or post request to the Airtable API.
@@ -137,6 +149,7 @@ Example:
 	>>> req = _airtable.push_data(url, payload, patch=True)
 	>>> req
 	200
+[back](#table-of-contents)
 
 #### Create a list of data in an Airtable column
 - Returns a list of row data based on the Airtable column.
@@ -149,6 +162,7 @@ Example:
 	>>> _list = _airtable.create_list(url, 'SKU')
 	>>> _list
 	['12345', '54321', '74125']
+[back](#table-of-contents)
 
 #### Check Airtable table for duplicates based on column data
 - Returns a list of duplicate row data based on the Airtable column.
@@ -164,6 +178,7 @@ Example:
 	----table: Master
 	----Data: ['74125']
 	>>> # This means that the Master table contains 2 records with SKU 74125
+[back](#table-of-contents)
 
 #### Cleans up a string that is formatted as a list
 - Returns a string that contains the following characters: ["'", "[", "]"]
@@ -176,17 +191,21 @@ Example:
 	>>> my_string = _airtable.clean_list_string(my_string )
 	>>> print(type(my_sting), my_sting)
 	string	rec123456
+[back](#table-of-contents)
 	
 ---
 ### SlackToolbox Class
 #### Overview
 The class contains functions that help integrating with Slack easier.
+[back](#table-of-contents)
 
 ---
 
 #### SlackToolbox Class Instance
 
 	_slack = nj.SlackToolbox(<api_key>, <channel_name>)
+[back](#table-of-contents)
+
 ---
 #### Send a warning message in a slack channel
 - The function sends a message to a specific channel
@@ -200,6 +219,7 @@ Example:
 	>>> _slack.send_warning(__file__, 'check_stock_availability', 'Stock Availability for 74403 returned -33.0')
 
 ![Sample message](https://github.com/pfajardo-nj/NathanJamesToolbox/blob/master/assets/slack_error_sample.JPG)
+[back](#table-of-contents)
 	
 #### Send a booking confirmation message in a slack channel
 - The function sends a booking confirmation message to a specific channel
@@ -210,18 +230,21 @@ Example:
 
 	>>> _slack = nj.SlackToolbox('xyzAPIkey', 'operations')
 	>>> _slack.send_warning(__file__, 'create_shipment', 'Flexport booking created for PO-00xxx (#Containers: 4) | Cargo Ready Date: 2020-08-31) | Delivery Date: 2020-09-30)')
-
+[back](#table-of-contents)
 
 ---
 ### MySQLToolbox Class
 #### Overview
 The class contains functions that help integrating with mySQL easier.
+[back](#table-of-contents)
 
 ---
 #### MySQLToolbox Class Instance
 
 	>>> # _mySQL= nj.mySQLToolbox(default_file_path, host, user, password, database_name)
 	>>> _mySQL= nj.mySQLToolbox('c:\\', '123.456.7.8', 'root', 'Pass8426Word', 'NathanJames')
+[back](#table-of-contents)
+
 ---
 #### Read a query
 - Run a query and return the result
@@ -242,6 +265,7 @@ Example:
 	>>> req = _mySQL.read_query(qry, 'f')
 	>>> req
 	((12345, Regular), (54321, Regular), (74125, Regular))
+[back](#table-of-contents)
 
 #### Run a query
 - Run a query and return if it passed or failed
@@ -258,18 +282,21 @@ Example:
 	>>> req = _mySQL.runQuery(qry)
 	>>> req
 	Failed
-
+[back](#table-of-contents)
 
 ---
 ### Cin7Toolbox Class
 #### Overview
 The class contains functions that help integrating with Cin7.
+[back](#table-of-contents)
 
 ---
 #### Cin7Toolbox Class Instance
 
 	>>> # _cin7= nj.Cin7Toolbox(username, password)
 	>>> _cin7= nj.Cin7Toolbox('test_user', 'Pass8426Word')
+[back](#table-of-contents)
+
 ---
 #### get_json
 - Return a list containing the json response from the end-point
@@ -282,16 +309,20 @@ Example:
 	>>> req = _cin7.get_json(url)
 	>>> req
 	[{"id": 1234,"createdDate": "2018-07-18T06:00:00Z","modifiedDate": "2018-08-09T19:01:12Z","createdBy": 30437,"processedBy": 0,"isApproved": true,"reference": "CS122213218","memberId": 17,"firstName": "","lastName": "","company": "Wayfair","email": "","phone": "88888888888","mobile": ""}]
-	
+[back](#table-of-contents)
+
 ---
 ### MiscToolbox Class
 #### Overview
 The class contains functions that help integrating with Cin7.
+[back](#table-of-contents)
 
 ---
 #### MiscToolbox Class Instance
 
 	>>> _misc= nj._misc()
+[back](#table-of-contents)
+
 ---
 #### getWeek
 - Return the current day's NathanJames week number
@@ -304,11 +335,14 @@ Example:
 	>>> _week = get_week()
 	>>> _week
 	154
+[back](#table-of-contents)
 
 ## Authors
 
 * **Paulo Fajardo** - *Initial work* - [github](https://github.com/pfajardo-nj/NathanJames-Automation-Script)
+[back](#table-of-contents)
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+[back](#table-of-contents)
