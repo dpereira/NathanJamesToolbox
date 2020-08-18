@@ -1,3 +1,23 @@
+# Table of contents
+- [NathanJames Toolbox](#heading)
+	* [Getting Started](#sub-heading)
+		+ [Installing](#sub-sub-heading)
+	* [Airtable Class](#sub-heading)
+		+ [Overview](#sub-sub-heading)
+		+ [Importing the module](#sub-sub-heading)
+		+ [Create a URL using the table name](#sub-sub-heading)
+		+ [Create a dictionary of columns](#sub-sub-heading)
+		+ [Create a list of JSON containing all data](#sub-sub-heading)
+		+ [Create a list of Airtable record IDs](#sub-sub-heading)
+		+ [Delete a list of Airtable record IDs](#sub-sub-heading)
+		+ [Push data to Airtable](#sub-sub-heading)
+		+ [Create a list of data in an Airtable column](#sub-sub-heading)
+		+ [Check Airtable table for duplicates based on column data](#sub-sub-heading)
+		+ [Cleans up a string that is formatted as a list](#sub-sub-heading)
+	* [Author](#sub-heading)
+	* [License](#sub-heading)
+
+<!-- toc -->
 
 # NathanJames Toolbox
 
@@ -14,8 +34,6 @@ You can use pip to install the package.
 ```
 pip install NathanJamesToolbox
 ```
-
-## Usage
 
 ### AirtableToolbox Class
 #### Overview
