@@ -71,6 +71,33 @@ The function also does not allow you to pass in query parameters.
 	>>> _json_master = _airtable.get_ids('Master', 'SKU')
 	{'recxyzId': '12345', 'recabcId': '54321', 'recasdId': '74125'}
 
+**Delete a list of Airtable record IDs**
+Delete records in Airtable based on record IDs. Please note that the function can only accept a maximum of 10 record IDs per request. This is an inherit limitation from Airtable.
+
+	>>> # delete_ids(<table name>, <list_id>)
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> _airtable.delete_ids('Master', ['recxyzId', 'recabcId', 'recasdId'])
+
+**Push data to Airtable (Patch / Post)**
+Sends either a patch or post request to the Airtable API.
+|Status|Code|Reason|Description
+|--|--|--|--|
+|Success|200|OK|Request completed successfully.
+|User Error|400|Bad Request|The request encoding is invalid; the request can't be parsed as a valid JSON.
+|User Error|401|Unauthorized|Accessing a protected resource without authorization or with invalid credentials.
+|User Error|402|Payment Required|The account associated with the API key making requests hits a quota that can be increased by upgrading the Airtable account plan.
+|User Error|403|Forbidden|Accessing a protected resource with API credentials that don't have access to that resource.
+|User Error|404|Not Found|Route or resource is not found. This error is returned when the request hits an undefined route, or if the resource doesn't exist (e.g. has been deleted).
+|User Error|413|Request Entity Too Large|The request exceeded the maximum allowed payload size. You shouldn't encounter this under normal use.
+|User Error|422|Invalid Request|The request data is invalid. This includes most of the base-specific validations. You will receive a detailed error message and code pointing to the exact issue.
+	
+	>>> # push_data(url, payload, patch=True) *** if patch=True, send a patch request else if patch=False then send a post request
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> url = _airtable.create_url('Master')
+	>>> payload = {"records": [{"id": "recxyzId", "fields": {"Product Title": "New Sample Title"}}]}
+	>>> req = _airtable.push_data(url, payload, patch=True)
+	>>> req
+	200
 
 
 ## Authors
