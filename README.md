@@ -177,6 +177,35 @@ Example:
 	>>> print(type(my_sting), my_sting)
 	string	rec123456
 	
+---
+### SlackToolbox Class
+#### Overview
+The class contains functions that help integrating with Slack easier.
+
+---
+
+**Importing the module**
+
+	>>> from NathanJamesToolbox import NathanJamesToolbox as nj
+
+**SlackToolboxClass Instance**
+
+	_slack = nj.SlackToolbox(<api_key>, <channel_name>)
+---
+**Send a warning message in a slack channel**
+- The function sends a message to a specific channel
+
+Example:
+
+	>>> # send_warning(pyfile=__file__, funcName=None, description=None)
+
+	>>> import sys
+	>>> _slack = nj.SlackToolbox('xyzAPIkey', 'General')
+	>>> _slack.send_warning(__file__, 'check_stock_availability', 'Stock Availability for 74403 returned -33.0')
+
+![Sample message](https://github.com/pfajardo-nj/NathanJamesToolbox/blob/master/assets/slack_error_sample.JPG)
+	
+
 
 ## Authors
 
