@@ -32,8 +32,9 @@ The class contains functions that help integrating with Airtable easier.
 	_airtable = nj.airtableToolbox(<airtable base>, <airtable API Key>)
 ---
 **Create a URL using the table name**
+ - Create a formatted URL by supplying the table name
 
-Create a formatted URL by supplying the table name
+Example:
 
 	>>> # _airtable.create_url(<Table Name>)
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
@@ -42,8 +43,9 @@ Create a formatted URL by supplying the table name
 	'https://api.airtable.com/v0/Master'
 
 **Create a dictionary of columns**
+- Loop through all the pages and create a dictionary based on the table columns.
 
-Loop through all the pages and create a dictionary based on the table columns.
+Example:
 
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
 	>>> url = _airtable.create_url('Master?filterbyformula={SKU}=12345')
@@ -57,8 +59,9 @@ Loop through all the pages and create a dictionary based on the table columns.
 	{'12345': ['recxyzId', 'Regular', 'Live']}
 	
 **Create a list of JSON containing all data**
+- Loop through all the pages and create a list containing all data on all columns.
 
-Loop through all the pages and create a list containing all data on all columns.
+Example:
 
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
 	>>> url = _airtable.create_url('Master?filterbyformula={SKU}=12345')
@@ -68,26 +71,29 @@ Loop through all the pages and create a list containing all data on all columns.
 	[{"id": "recxyzId","fields": {"SKU": "12345","Product Title": "Sample Title","PDS": ["recapABC"],"Product Class": "New","UPC": ["recABC"]}]
 	
 **Create a list of Airtable record IDs**
+- Loop through all the pages and create a dictionary containing the {record ID: column data}.
+- This is similar to create_dictionary but this limits the output to just 1 data point with the key being the record ID.
+- The function also does not allow you to pass in query parameters.
 
-Loop through all the pages and create a dictionary containing the {record ID: column data}.
-This is similar to create_dictionary but this limits the output to just 1 data point with the key being the record ID.
-The function also does not allow you to pass in query parameters.
+Example:
 
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
 	>>> _json_master = _airtable.get_ids('Master', 'SKU')
 	{'recxyzId': '12345', 'recabcId': '54321', 'recasdId': '74125'}
 
 **Delete a list of Airtable record IDs**
+- Delete records in Airtable based on record IDs.
+- Please note that the function can only accept a maximum of 10 record IDs per request. This is an inherit limitation from Airtable.
 
-Delete records in Airtable based on record IDs. Please note that the function can only accept a maximum of 10 record IDs per request. This is an inherit limitation from Airtable.
+Example:
 
 	>>> # delete_ids(<table name>, <list_id>)
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
 	>>> _airtable.delete_ids('Master', ['recxyzId', 'recabcId', 'recasdId'])
 
 **Push data to Airtable (Patch / Post)**
+- Sends either a patch or post request to the Airtable API.
 
-Sends either a patch or post request to the Airtable API.
 |Status|Code|Reason|Description
 |--|--|--|--|
 |Success|200|OK|Request completed successfully.
@@ -102,7 +108,9 @@ Sends either a patch or post request to the Airtable API.
 |Server error|502|Bad Gateway|Airtable's servers are restarting or an unexpected outage is in progress. You should generally not receive this error, and requests are safe to retry.
 |Server error|503|Service Unavailable|The server could not process your request in time. The server could be temporarily unavailable, or it could have timed out processing your request. You should retry the request with backoffs.
 	
-*** The function returns the status code
+- The function returns the status code
+
+Example:
 	
 	>>> # push_data(url, payload, patch=True) *** if patch=True, send a patch request else if patch=False then send a post request
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
@@ -113,8 +121,9 @@ Sends either a patch or post request to the Airtable API.
 	200
 
 **Create a list of data in an Airtable column**
+- Returns a list of row data based on the Airtable column.
 
-Returns a list of row data based on the Airtable column.
+Example:
 
 	>>># create_list(url, column)
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
@@ -124,8 +133,9 @@ Returns a list of row data based on the Airtable column.
 	['12345', '54321', '74125']
 
 **Check Airtable table for duplicates based on column data**
+- Returns a list of duplicate row data based on the Airtable column.
 
-Returns a list of duplicate row data based on the Airtable column.
+Example:
 
 	>>># table_duplicate_check(url, baseName)
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
@@ -138,8 +148,9 @@ Returns a list of duplicate row data based on the Airtable column.
 	>>> # This means that the Master table contains 2 records with SKU 74125
 
 **Cleans up a string that is formatted as a list**
+- Returns a string that contains the following characters: ["'", "[", "]"]
 
-Returns a string that contains the following characters: ["'", "[", "]"]
+Example:
 
 	>>># clean_list_string(str)
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
