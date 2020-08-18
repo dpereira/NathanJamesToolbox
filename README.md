@@ -340,9 +340,11 @@ Example:
 ## Authors
 
 * **Paulo Fajardo** - *Initial work* - [github](https://github.com/pfajardo-nj/NathanJames-Automation-Script)
+
 [back](#table-of-contents)
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
 [back](#table-of-contents)
