@@ -90,6 +90,11 @@ Sends either a patch or post request to the Airtable API.
 |User Error|404|Not Found|Route or resource is not found. This error is returned when the request hits an undefined route, or if the resource doesn't exist (e.g. has been deleted).
 |User Error|413|Request Entity Too Large|The request exceeded the maximum allowed payload size. You shouldn't encounter this under normal use.
 |User Error|422|Invalid Request|The request data is invalid. This includes most of the base-specific validations. You will receive a detailed error message and code pointing to the exact issue.
+|Server error|500|Internal Server Error|The server encountered an unexpected condition.
+|Server error|502|Bad Gateway|Airtable's servers are restarting or an unexpected outage is in progress. You should generally not receive this error, and requests are safe to retry.
+|Server error|503|Service Unavailable|The server could not process your request in time. The server could be temporarily unavailable, or it could have timed out processing your request. You should retry the request with backoffs.
+	
+*** The function returns the status code
 	
 	>>> # push_data(url, payload, patch=True) *** if patch=True, send a patch request else if patch=False then send a post request
 	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
@@ -98,7 +103,38 @@ Sends either a patch or post request to the Airtable API.
 	>>> req = _airtable.push_data(url, payload, patch=True)
 	>>> req
 	200
+**Create a list of data in an Airtable column**
+Returns a list of row data based on the Airtable column.
 
+	>>># create_list(url, column)
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> url = _airtable.create_url('Master')
+	>>> _list = _airtable.create_list(url, 'SKU')
+	>>> _list
+	['12345', '54321', '74125']
+
+**Check Airtable table for duplicates based on column data**
+Returns a list of duplicate row data based on the Airtable column.
+
+	>>># table_duplicate_check(url, baseName)
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> url = _airtable.create_url('Master')
+	>>> _list_duplicates = _airtable.table_duplicate_check(url, 'SKU')
+	>>> _list
+	The following duplicates found on
+	----table: Master
+	----Data: ['74125']
+	>>> # This means that the Master table contains 2 records with SKU 74125
+**Cleans up a string that is formatted as a list**
+Returns a string that contains the following characters: ["'", "[", "]"]
+
+	>>># clean_list_string(str)
+	>>> _airtable = nj.airtableToolbox('abcdefg', 'xyzApiKey')
+	>>> my_string = "['rec123456']"
+	>>> my_string = _airtable.clean_list_string(my_string )
+	>>> print(type(my_sting), my_sting)
+	string	rec123456
+	
 
 ## Authors
 
