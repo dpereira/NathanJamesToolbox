@@ -169,8 +169,12 @@ class airtableToolbox:
         return '{}/{}'.format(self.airtableURL, url_base)
 
     def get_ids(self, table, column_name):
-        url = "{base_url}/{table}?sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}".format(
-            base_url=self.airtableURL, table=table, column_name=column_name)
+        if '?' in table:
+            url = "{base_url}/{table}&sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}".\
+                format(base_url=self.airtableURL, table=table, column_name=column_name)
+        else:
+            url = "{base_url}/{table}?sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}".\
+                format(base_url=self.airtableURL, table=table, column_name=column_name)
         atURL = url
         _dict = {}
 
@@ -279,6 +283,13 @@ class slackToolbox:
         _message = 'Python File:\n\t\t{}\n' \
                    'Function Name:\n\t\t{}\n' \
                    'Description:\n\t\t{}\n{}'.format(pyfile, funcName, description, '=' * 100)
+        slack = Slacker(self._key)
+        slack.chat.post_message(self._channel, _message)
+
+    def send_warning_steps(self, pyfile=__file__, funcName=None, warning=None, steps=None):
+        _message = 'Script File Name:\n\t\t{} > {}\n' \
+                   'Error Message:\n\t\t{}\n' \
+                   'Next Steps:\n\t\t{}\n{}'.format(pyfile, funcName, warning, steps, '=' * 100)
         slack = Slacker(self._key)
         slack.chat.post_message(self._channel, _message)
 
@@ -492,11 +503,60 @@ class FlexportToolbox:
     def __init__(self, token, version=2):
         self.base_url = 'https://api.flexport.com/'
         self.token = token
+        self.version = version
         self.headers = {
             'Authorization': 'Token token="%s"' % self.token,
             'Content-Type': 'application/json; charset=utf-8',
             'Flexport-Version': '{}'.format(version)
         }
+
+    def get_json_list(self, endpoint, **kwargs):
+        params = []
+        page_specific = False
+        for idx, k in enumerate(kwargs, start=1):
+            page_specific = True if k == 'page' else page_specific
+            params.append('='.join([str(k), str(kwargs.get(k))]))
+        base_url = '?'.join([''.join([self.base_url, endpoint.replace('/', '')]), '&'.join(params)])
+
+        if page_specific:
+            print(base_url)
+            data = requests.request('GET', url=base_url, headers=self.headers)
+            if data.status_code != 200:
+                return data, []
+
+            if self.version == 1:
+                return data, data.json()['records']
+            elif self.version == 2:
+                return data, data.json()['data']['data']
+            else:
+                return 'Invalid API version'
+
+        page = 0
+        list_json = []
+        while True:
+            page += 1
+            url = '&'.join([base_url, 'page={}'.format(page)])
+            print(url)
+            data = requests.request('GET', url=url, headers=self.headers)
+            if data.status_code != 200:
+                return data, []
+
+            json = data.json()
+
+            if self.version == 1:
+                if len(json['records']) == 0:
+                    break
+
+                [list_json.append(i) for i in json['records']]
+            elif self.version == 2:
+                [list_json.append(i) for i in json['data']['data']]
+
+                if json['data']['next'] is None:
+                    break
+            else:
+                return 'Invalid API version'
+
+        return data, list_json
 
     def get_json(self, endpoint, *args):
         if 'api.flexport.com' not in endpoint:
@@ -542,8 +602,8 @@ class FlexportToolbox:
                     for arg in args:
                         _list_args.append(r[arg])
                     _dict_id[id_] = _list_args
-                if ver == 1 or 'page=' in url:
-                    return _dict_id
+                # if ver == 1 or 'page=' in url:
+                #     return _dict_id
                 url = data['data']['next']
                 if url is None:
                     return _dict_id
@@ -558,17 +618,28 @@ class Cin7Toolbox:
     def get_json(self, endpoint):
         jsonURL = '{}{}'.format(self.baseURL, endpoint)
         if 'page=' in jsonURL:
-            return requests.get(jsonURL, auth=(self.username, self.password)).json()
+            print(jsonURL)
+            r = requests.get(jsonURL, auth=(self.username, self.password))
+            if r.status_code != 200:
+                return r
+            else:
+                return r.json()
         else:
             # loop all pages
             jsonAll = []
             pg = 0
             while True:
                 pg += 1
-                print(jsonURL + '&page={}'.format(pg))
-                data = requests.get(jsonURL + '&page={}'.format(pg), auth=(self.username, self.password)).json()
-                if len(data) != 0:
-                    for r in data:
+                url = jsonURL + '&page={}'.format(pg) if '?' in jsonURL else jsonURL + '?page={}'.format(pg)
+                print(url)
+
+                data = requests.get(url, auth=(self.username, self.password))
+
+                if data.status_code != 200:
+                    return data
+
+                if len(data.json()) != 0:
+                    for r in data.json():
                         jsonAll.append(r)
                 else:
                     break
@@ -599,14 +670,23 @@ class FreshdeskToolbox:
             data = requests.get(reqURL, auth=self.auth_).json()
             totalData += len(data)
 
-            if len(data) == 0:
-                break
+            if 'search' not in url:
+                if len(data) == 0:
+                    break
+                for r in data:
+                    _list_arg = []
+                    for arg in args:
+                        _list_arg.append(r[arg])
+                    _list_generic.append(_list_arg)
+            else:
+                if len(data.get('results')) == 0:
+                    break
+                for r in data.get('results'):
+                    _list_arg = []
+                    for arg in args:
+                        _list_arg.append(r[arg])
+                    _list_generic.append(_list_arg)
 
-            for r in data:
-                _list_arg = []
-                for arg in args:
-                    _list_arg.append(r[arg])
-                _list_generic.append(_list_arg)
             if 'page=' in url:
                 break
         return _list_generic
@@ -713,4 +793,11 @@ class MiscToolbox:
         value = eval(value)
         return json.dumps(value)
 
+    def get_eom(self, base_date):
+        if not isinstance(base_date, dt.datetime):
+            raise Exception('Invalid datetime value: Expected valid datetime value')
 
+        base_date = dt.datetime(year=base_date.year, month=base_date.month, day=1)
+        base_end = base_date + dt.timedelta(days=32)
+        eom = dt.datetime(year=base_end.year, month=base_end.month, day=1) - dt.timedelta(days=1)
+        return eom
