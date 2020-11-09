@@ -9,6 +9,7 @@ import sys
 import inspect
 import pathlib
 import json
+import time
 
 
 class airtableToolbox:
@@ -622,18 +623,27 @@ class Cin7Toolbox:
             r = requests.get(jsonURL, auth=(self.username, self.password))
             if r.status_code != 200:
                 return r
+            elif isinstance(r, str):
+                raise Exception(r)
             else:
                 return r.json()
         else:
             # loop all pages
             jsonAll = []
             pg = 0
+            string_instance_counter = 0
             while True:
+                string_instance_counter += 1
                 pg += 1
                 url = jsonURL + '&page={}'.format(pg) if '?' in jsonURL else jsonURL + '?page={}'.format(pg)
                 print(url)
 
                 data = requests.get(url, auth=(self.username, self.password))
+
+                if isinstance(data, str):
+                    if string_instance_counter >= 50:
+                        raise Exception(data)
+                    continue
 
                 if data.status_code != 200:
                     return data
@@ -667,7 +677,17 @@ class FreshdeskToolbox:
                 reqURL = '{}?page={}'.format(url, pg) if '?' not in url else '{}&page={}'.format(url, pg)
 
             print(reqURL)
-            data = requests.get(reqURL, auth=self.auth_).json()
+
+            while True:
+                data = requests.get(reqURL, auth=self.auth_)
+                if data.status_code == 429:
+                    print('\n')
+                    print('{} {} - Retrying...'.format(data.status_code, data.reason))
+                    time.sleep(60)
+                else:
+                    data = data.json()
+                    break
+
             totalData += len(data)
 
             if 'search' not in url:
