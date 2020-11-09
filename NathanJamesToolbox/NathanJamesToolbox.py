@@ -639,6 +639,7 @@ class Cin7Toolbox:
                 print(url)
 
                 data = requests.get(url, auth=(self.username, self.password))
+                time.sleep(1)
 
                 if isinstance(data, str):
                     if string_instance_counter >= 50:
