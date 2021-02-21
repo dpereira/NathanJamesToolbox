@@ -10,6 +10,7 @@ import inspect
 import pathlib
 import json
 import time
+import os
 
 
 class airtableToolbox:
@@ -72,6 +73,10 @@ class airtableToolbox:
     def clean_list_string(self, str):
         str = str.replace('[', '').replace("'", '').replace(']', '')
         return str
+
+    def api_request(self, url, payload, method=None):
+        r = requests.request(method, url, data=payload, headers=self.airtableHeaders)
+        return r
 
     def push_data(self, url, payload, patch=True):
         try:
@@ -299,21 +304,36 @@ class pdfFillerToolbox:
     def __init__(self, baseURL, downloadPath):
         self.baseURL = baseURL
         self.downloadPath = downloadPath
+        # self.postHeaders = {'content-type': 'application/json',
+        #                     'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjgwNThiOTFhYTE5MDViZGJhNmNmZ'
+        #                                      'TIwZTI0ZmFiYjBlNTc5MDNlYjE4MWM4N2UzNGEzYjVhOTc4ZGJkM2E4YTg2YjUwM2EwNTkwNzk3ZWZkIn0.'
+        #                                      'eyJhdWQiOiIwIiwianRpIjoiODA1OGI5MWFhMTkwNWJkYmE2Y2ZlMjBlMjRmYWJiMGU1NzkwM2ViMTgxYzg'
+        #                                      '3ZTM0YTNiNWE5NzhkYmQzYThhODZiNTAzYTA1OTA3OTdlZmQiLCJpYXQiOjE1NzM1MzY0NDMsIm5iZiI6MT'
+        #                                      'U3MzUzNjQ0MywiZXhwIjoxNjA1MTU4ODQzLCJzdWIiOiIyMDYxMjU0MjUiLCJzY29wZXMiOltdfQ.ffahz4f'
+        #                                      '-INxOYoKqoBMcfLQDmTRRE8s9pTY_PWLiU7A5BnmlZI0fz6ch6bfnENlB00BXO7XLaVRZiMmSp2HmHP_X0u'
+        #                                      'bl76horv8eGrnYwB21Sldr9M4YL0as-fg6fa65Za9jS2iXfkQyhnMXKmoC4_bbEbGT3wtFGl9sFhaJJ_'
+        #                                      'tAbkS9lOkBCxwKFiR61girhocWYEAAlnJDqwYUk3E-L4k3QfVBZphLb9FVEWm_woWzixrmHBeVI6h1ymjHd'
+        #                                      'MndV5ctDMU5CCBvISodcr9aMaDzIukHWxHqDNb1DTtYqtO7yPXkjvlfuvPABeD4xHyH5KPOxFqt0tSOaJmU'
+        #                                      'J5xGh0vh_SV_FwtLDVizg4ALrnWGu5BNoVWnmo7sy9YKgU3LEm0mzr--j6mW4TC_Aw8y6eXE5uAc1p5wiZP'
+        #                                      '1OnfGYG3a8ZEaY-F7ZopR_KXJyf-oHWoZh9--8BHZgffiGz1_cuVcq8leMhf5R3etLlwrPDbt-kYcVkXFFb'
+        #                                      'npM2fxQqYxPPUhas2U9q9A9q3x8KXSRdm7efurFVIe_gWCrqL1_DQ52FzphyRzANxqzoCvM4EsAU-t1B0Dd'
+        #                                      'VZ6ybtQ3h3aneZaNnFdG3zv3Zm7BQqAY_IGhM7Wlq2GkM9nbz2A-Sc6K6cwIskXdvqF2acXNyXWXGXlSD3L'
+        #                                      'YI-FicJ0RoM8DtU'}
         self.postHeaders = {'content-type': 'application/json',
-                            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjgwNThiOTFhYTE5MDViZGJhNmNmZ'
-                                             'TIwZTI0ZmFiYjBlNTc5MDNlYjE4MWM4N2UzNGEzYjVhOTc4ZGJkM2E4YTg2YjUwM2EwNTkwNzk3ZWZkIn0.'
-                                             'eyJhdWQiOiIwIiwianRpIjoiODA1OGI5MWFhMTkwNWJkYmE2Y2ZlMjBlMjRmYWJiMGU1NzkwM2ViMTgxYzg'
-                                             '3ZTM0YTNiNWE5NzhkYmQzYThhODZiNTAzYTA1OTA3OTdlZmQiLCJpYXQiOjE1NzM1MzY0NDMsIm5iZiI6MT'
-                                             'U3MzUzNjQ0MywiZXhwIjoxNjA1MTU4ODQzLCJzdWIiOiIyMDYxMjU0MjUiLCJzY29wZXMiOltdfQ.ffahz4f'
-                                             '-INxOYoKqoBMcfLQDmTRRE8s9pTY_PWLiU7A5BnmlZI0fz6ch6bfnENlB00BXO7XLaVRZiMmSp2HmHP_X0u'
-                                             'bl76horv8eGrnYwB21Sldr9M4YL0as-fg6fa65Za9jS2iXfkQyhnMXKmoC4_bbEbGT3wtFGl9sFhaJJ_'
-                                             'tAbkS9lOkBCxwKFiR61girhocWYEAAlnJDqwYUk3E-L4k3QfVBZphLb9FVEWm_woWzixrmHBeVI6h1ymjHd'
-                                             'MndV5ctDMU5CCBvISodcr9aMaDzIukHWxHqDNb1DTtYqtO7yPXkjvlfuvPABeD4xHyH5KPOxFqt0tSOaJmU'
-                                             'J5xGh0vh_SV_FwtLDVizg4ALrnWGu5BNoVWnmo7sy9YKgU3LEm0mzr--j6mW4TC_Aw8y6eXE5uAc1p5wiZP'
-                                             '1OnfGYG3a8ZEaY-F7ZopR_KXJyf-oHWoZh9--8BHZgffiGz1_cuVcq8leMhf5R3etLlwrPDbt-kYcVkXFFb'
-                                             'npM2fxQqYxPPUhas2U9q9A9q3x8KXSRdm7efurFVIe_gWCrqL1_DQ52FzphyRzANxqzoCvM4EsAU-t1B0Dd'
-                                             'VZ6ybtQ3h3aneZaNnFdG3zv3Zm7BQqAY_IGhM7Wlq2GkM9nbz2A-Sc6K6cwIskXdvqF2acXNyXWXGXlSD3L'
-                                             'YI-FicJ0RoM8DtU'}
+                            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjA2NWZhNWRiNjE4Mjc2ZDllMTIwM'
+                                    'jAxMDU4NWVkNmIwYThlMjJjNTY0YzhmODhkNzk4OWI4NjNmNTZhZTE2ZjcxZWQ2YWM1NTQ3NDI3NTlmIn'
+                                    '0.eyJhdWQiOiIwIiwianRpIjoiMDY1ZmE1ZGI2MTgyNzZkOWUxMjAyMDEwNTg1ZWQ2YjBhOGUyMmM1NjR'
+                                    'jOGY4OGQ3OTg5Yjg2M2Y1NmFlMTZmNzFlZDZhYzU1NDc0Mjc1OWYiLCJpYXQiOjE2MDU1Mzc4MTYsIm5i'
+                                    'ZiI6MTYwNTUzNzgxNiwiZXhwIjoxNjM3MDczODE2LCJzdWIiOiIyMDYxMjU0MjUiLCJzY29wZXMiOltdf'
+                                    'Q.YzEozJovS5cvfmjY7rAowRC70yQS77znPlSQGrwcKwYtoxSd0tKmqG4rHxL32UKrV5BX_pAaGKA5y0h'
+                                    'OPAl5CyrYB43IZLM_BHCUHAFszcSCV0LQpyFmNMAnHYkP-KGDzyAANpybxjX1JdMUkhWG54wIkPV4bnit'
+                                    'GG11GzpvuKAaW8ODPobWSNxyq_1UjPns4E1l_1Eqj3RuBhem183hgU35PbTfPKOyjWt5EIxW4B1aXVYuX'
+                                    'wxS3iaYyTeVnfuqEqZs5rxLUA9JAjYXgG9rDWi8ycgCGI_bze0kQY4vqiheVNdV6fXXh9AoQYwiMZ4JAq'
+                                    'gKP3jZE5PZWyAHgjOMcHSGId3a6DP46G5yQoNoVf1umuCsQcLcm4147FjdVZY7cXmhaR1cLE4V604tvUk'
+                                    'tP6eSJPgNizjessZ1HsFSca34llFgVx2dJQ8px07zBGLZumgH6HY6f1IHCgJ08o0JmagtHueHuKVLVhz5'
+                                    'QWB9D_8v5t--x7G9_42LTCnClvSeXjYdb3fOSpT0kF4wNzfPNMwQv3s-2mg23GhumxfW0IsOjDhhCLu0X'
+                                    'fFW0770HbYNQ5-Kj6k2LTjSD3rll33bn1DrKJArZfr_2nckqZGpswCC_y_zNnl40XIwb0IBxMZGTmz6WB'
+                                    'GUMiS0-R0PHghEi9KA7_0E6cT0sVkTbGoibP0'}
         self.downloadHeaders = {'content-type': 'application/json',
                                 'Authorization': 'Bearer fXVIj4MZeHAahieugwzygN9dKkRXEklAwH98AfD8'}
 
@@ -325,7 +345,8 @@ class pdfFillerToolbox:
 
         url = 'https://api.pdffiller.com/v1/document/' + str(docID) + '/download/'
         r = requests.get(url, headers=self.downloadHeaders)
-        fName = '{}{}.pdf'.format(self.downloadPath, docName)
+        fName = '{}\\{}.pdf'.format(self.downloadPath, docName)
+        # fName = os.path.join(self.downloadPath, '{}.pdf'.format(docName))
         with open(fName, 'wb') as f:
             f.write(r.content)
         print('Documnet downloaded from PDFfiller. Local path =', fName)
@@ -559,18 +580,32 @@ class FlexportToolbox:
 
         return data, list_json
 
-    def get_json(self, endpoint, *args):
+    def get_json(self, endpoint, **kwargs):
         if 'api.flexport.com' not in endpoint:
             url = '{}{}'.format(self.base_url, endpoint)
         else:
             url = endpoint
-        if len(args) != 0:
-            url += '?'
-            for arg in args:
-                url += arg + '&'
-            url = url[:-1]
-        print(url)
-        return requests.get(url, headers=self.headers).json()
+
+        parameters = '&'.join(['{}={}'.format(i[0], i[1]) for i in list(kwargs.items())])
+        url = '?'.join([url, parameters]) if len(kwargs) != 0 else url
+
+        list_json = []
+        if self.version == 1:
+            print(url)
+            r = requests.request('GET', url, headers=self.headers)
+            page_result = r.json()
+            list_json.append(page_result['data']['data'])
+        elif self.version == 2:
+            while True:
+                print(url)
+                r = requests.request('GET', url, headers=self.headers)
+                page_result = r.json()
+                list_json.extend(page_result['data']['data'])
+                url = page_result['data']['next']
+                if url is None:
+                    break
+
+        return list_json
 
     def post_payload(self, endpoint, payload, *args):
         url = '{}{}'.format(self.base_url, endpoint)

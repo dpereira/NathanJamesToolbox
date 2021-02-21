@@ -74,6 +74,10 @@ class airtableToolbox:
         str = str.replace('[', '').replace("'", '').replace(']', '')
         return str
 
+    def api_request(self, url, payload, method=None):
+        r = requests.request(method, url, data=payload, headers=self.airtableHeaders)
+        return r
+
     def push_data(self, url, payload, patch=True):
         try:
             if patch:
@@ -576,18 +580,32 @@ class FlexportToolbox:
 
         return data, list_json
 
-    def get_json(self, endpoint, *args):
+    def get_json(self, endpoint, **kwargs):
         if 'api.flexport.com' not in endpoint:
             url = '{}{}'.format(self.base_url, endpoint)
         else:
             url = endpoint
-        if len(args) != 0:
-            url += '?'
-            for arg in args:
-                url += arg + '&'
-            url = url[:-1]
-        print(url)
-        return requests.get(url, headers=self.headers).json()
+
+        parameters = '&'.join(['{}={}'.format(i[0], i[1]) for i in list(kwargs.items())])
+        url = '?'.join([url, parameters]) if len(kwargs) != 0 else url
+
+        list_json = []
+        if self.version == 1:
+            print(url)
+            r = requests.request('GET', url, headers=self.headers)
+            page_result = r.json()
+            list_json.append(page_result['data']['data'])
+        elif self.version == 2:
+            while True:
+                print(url)
+                r = requests.request('GET', url, headers=self.headers)
+                page_result = r.json()
+                list_json.extend(page_result['data']['data'])
+                url = page_result['data']['next']
+                if url is None:
+                    break
+
+        return list_json
 
     def post_payload(self, endpoint, payload, *args):
         url = '{}{}'.format(self.base_url, endpoint)
