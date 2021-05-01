@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='NathanJamesToolbox',
-    version='1.3.11',
+    version='1.3.14',
     description='Collection of tools developed for NathanJames',
     long_description=long_description,
     long_description_content_type="text/markdown",
