@@ -435,6 +435,24 @@ class mySQLToolbox:
         self.password = password
         self.db = db
 
+    def read_query(self, qry, query_type):
+        if query_type == 'f':
+            query_filename = os.path.join(self.sqlPath, qry)
+            with open(query_filename, 'r') as f:
+                query_string = f.read()
+        elif query_type == 'q':
+            query_string = qry
+        else:
+            raise Exception('Invalid readFile type.')
+
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password, db=self.db)
+        cursor = db.cursor()
+        cursor.execute(query_string)
+        data = cursor.fetchall()
+        db.close()
+
+        return data
+
     def readQuery(self, qry, _type):
         if _type == 'f':
             with open('{}{}'.format(self.sqlPath, qry), 'r') as f:
