@@ -176,10 +176,10 @@ class airtableToolbox:
 
     def get_ids(self, table, column_name):
         if '?' in table:
-            url = "{base_url}/{table}&sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}".\
+            url = "{base_url}/{table}&sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}". \
                 format(base_url=self.airtableURL, table=table, column_name=column_name)
         else:
-            url = "{base_url}/{table}?sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}".\
+            url = "{base_url}/{table}?sort[0][field]={column_name}&sort[0][direction]=desc&fields[]={column_name}". \
                 format(base_url=self.airtableURL, table=table, column_name=column_name)
         atURL = url
         _dict = {}
@@ -300,104 +300,42 @@ class slackToolbox:
         slack.chat.post_message(self._channel, _message)
 
 
-class pdfFillerToolbox:
-    def __init__(self, baseURL, downloadPath):
-        self.baseURL = baseURL
-        self.downloadPath = downloadPath
-        # self.postHeaders = {'content-type': 'application/json',
-        #                     'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjgwNThiOTFhYTE5MDViZGJhNmNmZ'
-        #                                      'TIwZTI0ZmFiYjBlNTc5MDNlYjE4MWM4N2UzNGEzYjVhOTc4ZGJkM2E4YTg2YjUwM2EwNTkwNzk3ZWZkIn0.'
-        #                                      'eyJhdWQiOiIwIiwianRpIjoiODA1OGI5MWFhMTkwNWJkYmE2Y2ZlMjBlMjRmYWJiMGU1NzkwM2ViMTgxYzg'
-        #                                      '3ZTM0YTNiNWE5NzhkYmQzYThhODZiNTAzYTA1OTA3OTdlZmQiLCJpYXQiOjE1NzM1MzY0NDMsIm5iZiI6MT'
-        #                                      'U3MzUzNjQ0MywiZXhwIjoxNjA1MTU4ODQzLCJzdWIiOiIyMDYxMjU0MjUiLCJzY29wZXMiOltdfQ.ffahz4f'
-        #                                      '-INxOYoKqoBMcfLQDmTRRE8s9pTY_PWLiU7A5BnmlZI0fz6ch6bfnENlB00BXO7XLaVRZiMmSp2HmHP_X0u'
-        #                                      'bl76horv8eGrnYwB21Sldr9M4YL0as-fg6fa65Za9jS2iXfkQyhnMXKmoC4_bbEbGT3wtFGl9sFhaJJ_'
-        #                                      'tAbkS9lOkBCxwKFiR61girhocWYEAAlnJDqwYUk3E-L4k3QfVBZphLb9FVEWm_woWzixrmHBeVI6h1ymjHd'
-        #                                      'MndV5ctDMU5CCBvISodcr9aMaDzIukHWxHqDNb1DTtYqtO7yPXkjvlfuvPABeD4xHyH5KPOxFqt0tSOaJmU'
-        #                                      'J5xGh0vh_SV_FwtLDVizg4ALrnWGu5BNoVWnmo7sy9YKgU3LEm0mzr--j6mW4TC_Aw8y6eXE5uAc1p5wiZP'
-        #                                      '1OnfGYG3a8ZEaY-F7ZopR_KXJyf-oHWoZh9--8BHZgffiGz1_cuVcq8leMhf5R3etLlwrPDbt-kYcVkXFFb'
-        #                                      'npM2fxQqYxPPUhas2U9q9A9q3x8KXSRdm7efurFVIe_gWCrqL1_DQ52FzphyRzANxqzoCvM4EsAU-t1B0Dd'
-        #                                      'VZ6ybtQ3h3aneZaNnFdG3zv3Zm7BQqAY_IGhM7Wlq2GkM9nbz2A-Sc6K6cwIskXdvqF2acXNyXWXGXlSD3L'
-        #                                      'YI-FicJ0RoM8DtU'}
-        self.postHeaders = {'content-type': 'application/json',
-                            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjA2NWZhNWRiNjE4Mjc2ZDllMTIwM'
-                                    'jAxMDU4NWVkNmIwYThlMjJjNTY0YzhmODhkNzk4OWI4NjNmNTZhZTE2ZjcxZWQ2YWM1NTQ3NDI3NTlmIn'
-                                    '0.eyJhdWQiOiIwIiwianRpIjoiMDY1ZmE1ZGI2MTgyNzZkOWUxMjAyMDEwNTg1ZWQ2YjBhOGUyMmM1NjR'
-                                    'jOGY4OGQ3OTg5Yjg2M2Y1NmFlMTZmNzFlZDZhYzU1NDc0Mjc1OWYiLCJpYXQiOjE2MDU1Mzc4MTYsIm5i'
-                                    'ZiI6MTYwNTUzNzgxNiwiZXhwIjoxNjM3MDczODE2LCJzdWIiOiIyMDYxMjU0MjUiLCJzY29wZXMiOltdf'
-                                    'Q.YzEozJovS5cvfmjY7rAowRC70yQS77znPlSQGrwcKwYtoxSd0tKmqG4rHxL32UKrV5BX_pAaGKA5y0h'
-                                    'OPAl5CyrYB43IZLM_BHCUHAFszcSCV0LQpyFmNMAnHYkP-KGDzyAANpybxjX1JdMUkhWG54wIkPV4bnit'
-                                    'GG11GzpvuKAaW8ODPobWSNxyq_1UjPns4E1l_1Eqj3RuBhem183hgU35PbTfPKOyjWt5EIxW4B1aXVYuX'
-                                    'wxS3iaYyTeVnfuqEqZs5rxLUA9JAjYXgG9rDWi8ycgCGI_bze0kQY4vqiheVNdV6fXXh9AoQYwiMZ4JAq'
-                                    'gKP3jZE5PZWyAHgjOMcHSGId3a6DP46G5yQoNoVf1umuCsQcLcm4147FjdVZY7cXmhaR1cLE4V604tvUk'
-                                    'tP6eSJPgNizjessZ1HsFSca34llFgVx2dJQ8px07zBGLZumgH6HY6f1IHCgJ08o0JmagtHueHuKVLVhz5'
-                                    'QWB9D_8v5t--x7G9_42LTCnClvSeXjYdb3fOSpT0kF4wNzfPNMwQv3s-2mg23GhumxfW0IsOjDhhCLu0X'
-                                    'fFW0770HbYNQ5-Kj6k2LTjSD3rll33bn1DrKJArZfr_2nckqZGpswCC_y_zNnl40XIwb0IBxMZGTmz6WB'
-                                    'GUMiS0-R0PHghEi9KA7_0E6cT0sVkTbGoibP0'}
-        self.downloadHeaders = {'content-type': 'application/json',
-                                'Authorization': 'Bearer fXVIj4MZeHAahieugwzygN9dKkRXEklAwH98AfD8'}
+class PdfFillerToolbox:
+    def __init__(self, base_url, download_path, pdf_filler_token, download_token):
+        self.base_url = base_url
+        self.download_path = download_path
+        self.pdf_filler_token = pdf_filler_token
+        self.download_token = download_token
+        self.post_headers = {'content-type': 'application/json', 'Authorization': self.pdf_filler_token}
+        self.download_headers = {'content-type': 'application/json', 'Authorization': self.download_token}
 
-    def postJSON(self, templateID, pl):
-        data = requests.post('{}{}'.format(self.baseURL, templateID), pl, headers=self.postHeaders).json()
-        return data
+    def create_pdf_from_template(self, template_id, pdf_payload):
+        url = ''.join([self.base_url, str(template_id)])
+        request = requests.request('POST', url, data=pdf_payload, headers=self.post_headers)
+        return request
 
-    def pdf_download(self, docID, docName):
+    def pdf_download(self, document_id, document_name):
+        url = 'https://api.pdffiller.com/v1/document/{}/download/'.format(document_id)
+        request = requests.request('GET', url, headers=self.download_headers)
+        pdf_filename = None
 
-        url = 'https://api.pdffiller.com/v1/document/' + str(docID) + '/download/'
-        r = requests.get(url, headers=self.downloadHeaders)
-        fName = '{}\\{}.pdf'.format(self.downloadPath, docName)
-        # fName = os.path.join(self.downloadPath, '{}.pdf'.format(docName))
-        with open(fName, 'wb') as f:
-            f.write(r.content)
-        print('Documnet downloaded from PDFfiller. Local path =', fName)
+        if request.ok:
+            document_name = document_name.lower().replace(' ', '_')
+            pdf_filename = os.path.join(self.download_path, '{}.pdf'.format(document_name))
+            with open(pdf_filename, 'wb') as pdf:
+                pdf.write(request.content)
 
-    def checkAvail_Format(self, _json, _data, _type):
-        try:
-            _data = _json['fields'][_data]
-            if type(_data) is list:
-                _data = _data[0]
-        except KeyError:
-            return ''
-
-        if _type == 'date':
-            try:
-                _data = dt.datetime.strptime(_data, '%Y-%m-%d')
-                _data = dt.datetime.strftime(_data, '%m/%d/%Y')
-            except KeyError:
-                _data = ''
-        elif _type == 'str':
-            try:
-                _data = _data
-            except KeyError:
-                _data = ''
-            except TypeError:
-                _data = ''
-        elif _type == 'float':
-            try:
-                _data = round(_data, 3)
-                _data = '{:,.2f}'.format(_data)
-            except KeyError:
-                _data = ''
-        elif _type == 'int':
-            try:
-                _data = int(_data)
-                _data = '{:,}'.format(_data)
-            except KeyError:
-                _data = ''
-        else:
-            print('invalid _type')
-        return _data
+        return request, pdf_filename
 
 
-class googleCloudStrorageToolbox:
-    def __init__(self, keyFile, downloadPath):
-        self.keyFile = keyFile
-        self.downloadPath = downloadPath
+class GoogleCloudStorageToolbox:
+    def __init__(self, key_file):
+        self.keyFile = key_file
 
-    def upload_to_bucket(self, blob_name, path_to_file, bucket_name):
+    def upload_to_bucket(self, blob_name, path_to_file, gcs_bucket_name):
         """ Upload data to a bucket"""
         storage_client = storage.Client.from_service_account_json(self.keyFile)
-        bucket = storage_client.get_bucket(bucket_name)
+        bucket = storage_client.get_bucket(gcs_bucket_name)
         blob = bucket.blob(blob_name)
         blob.upload_from_filename(path_to_file)
         return blob.public_url
@@ -411,20 +349,21 @@ class googleCloudStrorageToolbox:
 
         # Note: Client.list_blobs requires at least package version 1.17.0.
         blobs = storage_client.list_blobs(bucket_name)
-        gcpFileList = []
+        gcp_file_list = []
 
         for blob in blobs:
             # print(blob.name)
-            gcpFileList.append(blob.name)
+            gcp_file_list.append(blob.name)
 
-        return gcpFileList
+        return gcp_file_list
 
-    def upload_file(self, gcpFilename, gcpBucketName):
+    def upload_file(self, gcp_filename, gcs_bucket_name):
         # Upload file to GCP
         print('Uploading to Google Cloud Storage...')
-        filePath = '{}{}'.format(self.downloadPath, gcpFilename)
-        uploadURL = self.upload_to_bucket(gcpFilename, filePath, gcpBucketName)
-        return uploadURL
+        path_to_file = gcp_filename
+        blob_name = os.path.split(gcp_filename)[1]
+        upload_url = self.upload_to_bucket(blob_name, path_to_file, gcs_bucket_name)
+        return upload_url
 
 
 class mySQLToolbox:
@@ -794,7 +733,6 @@ class Price2SpyToolbox:
 
 
 class SaddleCreekToolbox:
-
     class SaddleCreekSFTP:
         def __init__(self, _hostname, _username, _password):
             self._hostname = _hostname
