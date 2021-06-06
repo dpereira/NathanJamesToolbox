@@ -17,10 +17,10 @@ setuptools.setup(
     packages=['NathanJamesToolbox'],
     include_package_data=True,
     install_requires=[
-        'requests',
-        'slacker',
+        'requests==2.25.1',
+        'slacker==0.14.0',
         'datetime',
-        'google.cloud',
+        'google-cloud-storage==1.32.0',
         'pymysql',
         'selenium'
     ]
