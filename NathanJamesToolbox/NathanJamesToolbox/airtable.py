@@ -1,19 +1,30 @@
+import logging
+import logging.handlers
 import requests
 
 class Airtable:
-    def __init__(self, base, apiKey):
+
+    def __init__(self, base, apiKey, dry_run=False):
         self.base = base
         self.apiKey = apiKey
         self.airtableURL = 'https://api.airtable.com/v0/{}'.format(base)
         self.airtableHeaders = {'content-type': 'application/json', 'Authorization': 'Bearer {}'.format(apiKey)}
+        self.dry_run = dry_run
+        self.dry_run_logger = logging.getLogger("{} (DRY RUN)".format(__name__))
+        self.dry_run_logger.setLevel(logging.INFO)
+        self.dry_run_logger.handlers = []
+        self.dry_run_logger.addHandler(
+            logging.handlers.RotatingFileHandler("/tmp/{}-dry-run.log".format(__name__), maxBytes=2097152, backupCount=1)
+        )
+        self.logger = logging.getLogger(__name__)
 
-    def create_dictionary(self, url, baseName, reverse=False, *args):
+    def create_dictionary(self, url, basename, reverse=False, *args):
         _dict = {}
         _dict_reverse = {}
         atURL = url
 
         while True:
-            print(atURL)
+            self.logger.debug('at request: {atURL}'.format(atURL=atURL))
             r = requests.get(atURL, headers=self.airtableHeaders).json()
             if len(r) != 0:
                 for rec in r['records']:
@@ -62,15 +73,15 @@ class Airtable:
         return str
 
     def api_request(self, url, payload, method=None):
-        r = requests.request(method, url, data=payload, headers=self.airtableHeaders)
+        r = self._request(requests.request, method, url, data=payload, headers=self.airtableHeaders)
         return r
 
     def push_data(self, url, payload, patch=True):
         try:
             if patch:
-                r = requests.patch(url, payload, headers=self.airtableHeaders)
+                r = self._request(requests.patch, url, payload, headers=self.airtableHeaders)
             else:
-                r = requests.post(url, payload, headers=self.airtableHeaders)
+                r = self._request(requests.post, url, payload, headers=self.airtableHeaders)
             statCode = r.status_code
         except requests.exceptions.HTTPError as e:
             return e
@@ -172,7 +183,7 @@ class Airtable:
         _dict = {}
 
         while True:
-            print(atURL)
+            self.logger.debug(atURL)
             r = requests.get(atURL, headers=self.airtableHeaders).json()
             for row in r['records']:
                 _id = row['id']
@@ -219,9 +230,22 @@ class Airtable:
             raise Exception('Function NathanJamesToolbox.airtableToolbox.delete_ids can only handle a max of 10 IDs.')
 
         url = '{}/{}?{}'.format(self.airtableURL, _table, '&'.join(_list_id))
-        r = requests.request('DELETE', url, headers=self.airtableHeaders)
+        r = self._request(requests.request, 'DELETE', url, headers=self.airtableHeaders)
         return r
 
+    def _request(self, method, *args, **kwargs):
+        method_parameter = kwargs.get('method')
+        try:
+            method_parameter = args[0] if not method_parameter else method_parameter
+        except IndexError:
+            pass
 
-
-
+        has_side_effects = (
+            method in (requests.patch, requests.put, requests.post, requests.delete) or
+            method == requests.request and method_parameter in ('PATCH', 'PUT', 'POST', 'DELETE')
+        )
+        if self.dry_run and has_side_effects:
+            msg = "method {}; args {}; kwargs {}".format(method, args, kwargs)
+            self.dry_run_logger.info(msg)
+        else:
+            return method(*args, **kwargs)
