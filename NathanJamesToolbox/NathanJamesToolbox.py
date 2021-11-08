@@ -13,6 +13,10 @@ import time
 import os
 
 
+class AirtableException(Exception):
+    pass
+
+
 class airtableToolbox:
     def __init__(self, base, apiKey):
         self.base = base
@@ -20,14 +24,22 @@ class airtableToolbox:
         self.airtableURL = 'https://api.airtable.com/v0/{}'.format(base)
         self.airtableHeaders = {'content-type': 'application/json', 'Authorization': 'Bearer {}'.format(apiKey)}
 
-    def create_dictionary(self, url, baseName, reverse=False, *args):
+    def create_dictionary(self, url, baseName, reverse=False, expected_status_code=200, *args):
         _dict = {}
         _dict_reverse = {}
         atURL = url
 
         while True:
             print(atURL)
-            r = requests.get(atURL, headers=self.airtableHeaders).json()
+            response = requests.get(atURL, headers=self.airtableHeaders)
+
+            if response.status_code != expected_status_code:
+                msg = 'Error while fetching AT data for url {u} (http: {h}). Response was: {r}'.format(
+                    u=atURL, h=response.status_code, r=response.text
+                )
+                raise AirtableException(msg)
+
+            r = response.json()
             if len(r) != 0:
                 for rec in r['records']:
                     try:
